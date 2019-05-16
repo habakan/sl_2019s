@@ -1,0 +1,128 @@
+\documentclass[dvipdfmx]{beamer}
+\usetheme{metropolis}
+
+\begin{document}
+\title{GroupLasso}
+\author{habakan}
+\date{\today}
+
+\begin{frame}                  
+\titlepage                     
+\end{frame}
+
+\begin{frame}                  
+\tableofcontents
+\end{frame}
+
+\section{Soft Threshold の導出}             
+
+\begin{frame}
+    以下の最適化問題を考える
+    \begin{eqnarray}
+        \underset{\boldsymbol{w} \in \mathbb{R}^{d}}{\operatorname{minimize}}\left(\hat{L}(\boldsymbol{w})+\lambda\|\boldsymbol{w}\|_{1}\right)
+    \end{eqnarray}
+\end{frame}
+
+\begin{frame}
+    prox作用素の定義
+    \begin{eqnarray}
+        prox_g(y) = \underset{w \in \mathfrak{R}^{d}}{ \operatorname{argmin}} \left( \frac{1}{2} \| y - w \|_{2}^{2} + g(w) \right)
+    \end{eqnarray}
+    関数$prox_g(y)$は強凸関数である.
+
+    $l_1$ノルムに関するprox作用素
+    \begin{eqnarray}
+        prox_{\lambda}^{l_1}(y) = \underset{w \in \mathfrak{R}^{d}}{ \operatorname{argmin}} \left( \frac{1}{2} \| y - w \|_{2}^{2} + \|w\|_1 \right)
+    \end{eqnarray}
+\end{frame}
+
+\begin{frame}
+    $l_2$prox作用素を解析的に解を求める. \\
+    prox作用素は強凸関数であるため,微分をすることにより解析的に求めることができる. 
+    \begin{eqnarray}
+        \underset{w \in \mathfrak{R}^{d}}{ \operatorname{argmin}} \left( \frac{1}{2} \| y - w \|_{2}^{2} + \|w\|_2 \right) = \frac{1}{1+\lambda} y
+    \end{eqnarray}
+\end{frame}
+
+\begin{frame}
+    $l_1$prox作用素を解析的に解を求める. \\
+    \begin{eqnarray}
+        \frac{1}{2} \| y - w \|_{2}^{2} + \|w\|_1 = \sum_{j = 1}^{d} \left( \frac{1}{2} \| y_j - w_j \|_{2}^{2} + \|w_j\|_1 \right)
+    \end{eqnarray}
+    和に分解できたため, 各$j$について最小化をすることを考える. \\
+    最小化を達成する点では$w$の劣微分は$0$を含むことから
+    \begin{eqnarray}
+        y_j - w_j \in \partial \|w_j\|, j = 1, 2, 3, \cdots d
+    \end{eqnarray}
+\end{frame}
+
+\begin{frame}
+    絶対値関数$\|w\|$の劣微分
+    \begin{eqnarray}
+        \partial \|w\| = \begin{cases}
+            -1,  & w < 0 \\
+            \left[ -1, 1\right],  & w = 0 \\
+            1,  & w > 0 \\
+        \end{cases}
+    \end{eqnarray}
+    $w = 0$の時, 劣微分は１点には絞ることができない.
+    \begin{eqnarray}
+        y_j = \left[ -\lambda, \lambda \right]
+    \end{eqnarray}
+\end{frame}
+
+\begin{frame}
+    $w$についてそれぞれの場合分けを考える.
+    \begin{eqnarray}
+        \left[ prox_{\lambda}^{l_1} (y) \right]_j = \begin{cases}
+            y_j + \lambda, & y_j < - \lambda \\
+            0, & -\lambda \le y_j \le \lambda \\
+            y_j - \lambda, & y_j > \lambda \\
+        \end{cases}
+    \end{eqnarray}
+    関数$prox_{\lambda}^{l_1}$はSoft Treshold Functionと呼ばれる.
+\end{frame}
+
+\section{ISTA}
+\begin{frame}
+    以下のように$w$の更新を行う.
+    \begin{eqnarray}
+        w^{t+1} = \underset{w}{ \operatorname{argmin}} \left( \left< \triangledown \hat{L}(w^t), w - w^t \right> + \lambda \|w\|_1 - \frac{1}{2\eta_t} \|w - w^t\|^2_2 \right)
+    \end{eqnarray}
+    第一項：$\hat{L}(w)$を線形近似 \\
+    第三項：近接項 $w^t$より値が離れると大きくなる. \\
+    第一項と第三項をまとめると更新式は以下のprox作用素になる.  
+    \begin{eqnarray}
+        w^{t+1} = prox_{\lambda \eta_t}^{l_1} \left( w^t - \eta_t \triangledown \hat{L}(w^t) \right)
+    \end{eqnarray}
+    $\eta_t$：近接項を強くするパラメータ
+\end{frame}
+
+\section{Group Lasso}
+\begin{frame}
+    グループ$l_1$ノルムに関するprox作用素
+    \begin{eqnarray}
+        prox_{\lambda}^{\mathfrak{G}} = \underset{w \in \mathfrak{R}^d}{ \operatorname{argmin}} \left( \frac{1}{2} \| y - w \|_2^2 + \lambda \sum_{ \mathfrak{g} \in \mathfrak{G} } \| w_{ \mathfrak{g} } \|_p \right)
+    \end{eqnarray}
+    グループの重複がないことを仮定 \\
+    近接項を分解
+    \begin{eqnarray}
+        \| y - w \|_2^2 = \sum_{\mathfrak{g} \in \mathfrak{G}} \| y_{\mathfrak{g}} - w_{\mathfrak{g}} \|_2^2
+    \end{eqnarray}
+\end{frame}
+\begin{frame}
+    \begin{eqnarray}
+        y - w \in \lambda \partial \| w \|_2
+    \end{eqnarray}
+    劣微分$\partial \|w\|_2$は原点以外では1点$w/\|w\|_2$からなる集合, \\
+    原点以外では集合$\{g \in \mathcal{R}^d : \|g\|_2 \le 1\}$となる. \\
+    $\|y\|_2 < \lambda$のとき, $w=0$で最適となり, それ以外の場合, $y$を原点方向に長さ$\lambda$だけ縮小した点で最適\\
+    \begin{eqnarray}
+        prox_{\lambda\|\cdot\|_2}(y) = \begin{cases}
+            (\|y\|_2 - \lambda)\frac{y}{\|y\|_2}, & \|y\|_2 > \lambda \\
+            0, & otherwise
+        \end{cases}
+    \end{eqnarray}
+\end{frame}
+
+\end{document}
