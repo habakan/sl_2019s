@@ -6,3 +6,6 @@
 ## 2019 5/16
 - Slide about GroupLasso
 - Evaluate comparing Group Lasso and Lasso
+
+## 2019 5/23
+- Reproduct problems of Lasso
